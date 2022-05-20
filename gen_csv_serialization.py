@@ -3,15 +3,25 @@ import argparse
 import CppHeaderParser
 
 
-def get_header_function(struct):
-  namespace = f'{struct["namespace"]}::' if struct['namespace'] else ''
-  type_name = f'{namespace}{struct["name"]}'
-
-  s = f'''\
+def get_header_function_declaration(type_name):
+  return f'''\
 template <>
-inline void CsvHeader(
-    std::ostream& stream, const std::string& name, const {type_name}& data, bool trailing_comma) {{
-'''
+inline void CsvHeader(std::ostream& stream,
+                      const std::string& name,
+                      const {type_name}& data,
+                      bool trailing_comma)'''
+
+
+def get_serialization_function_declaration(type_name):
+  return f'''\
+template <>
+inline void CsvSerialize(std::ostream& stream,
+                         const {type_name}& data,
+                         bool trailing_comma)'''
+
+
+def get_header_function(struct):
+  s = f'{get_header_function_declaration(qualified_struct_type(struct))} {{\n'
 
   num_prop = len(struct['properties']['public'])
   for i, member in enumerate(struct['properties']['public']):
@@ -25,14 +35,7 @@ inline void CsvHeader(
 
 
 def get_serialization_function(struct):
-  namespace = f'{struct["namespace"]}::' if struct['namespace'] else ''
-  type_name = f'{namespace}{struct["name"]}'
-
-  s = f'''\
-template <>
-inline void CsvSerialize(
-    std::ostream& stream, const {type_name}& data, bool trailing_comma) {{
-'''
+  s = f'{get_serialization_function_declaration(qualified_struct_type(struct))} {{\n'
 
   num_prop = len(struct['properties']['public'])
   for i, member in enumerate(struct['properties']['public']):
@@ -46,12 +49,27 @@ inline void CsvSerialize(
 
 def get_header_header(inputs, primitives):
   s = ''
-  s += '#pragma once\n\n'
+  s += '#pragma once\n'
 
-  for f in inputs + primitives:
-    s += f'#include "{f}"\n'
+  for f in inputs:
+    s += f'\n#include "{f}"'
 
-  return s[:-1]
+  s += '\n'
+
+  for f in primitives:
+    s += f'\n#include "{f}"'
+
+  return s
+
+
+def qualified_struct_type(struct):
+  namespace = f'{struct["namespace"]}::' if struct['namespace'] else ''
+  return f'{namespace}{struct["name"]}'
+
+
+def qualified_member_type(member):
+  namespace = f'{member["namespace"]}' if member['namespace'] else ''
+  return f'{namespace}{member["type"]}'
 
 
 def main():
@@ -66,25 +84,31 @@ def main():
 
   args = parser.parse_args()
 
-  s = get_header_header(args.input, args.primitives)
-
+  structs = []
   for input_file in args.input:
     header = CppHeaderParser.CppHeader(input_file)
 
     if args.debug:
       print(header.toJSON())
 
-    structs = []
     for struct in header.classes.values():
       for base in struct['inherits']:
         if base['class'] == 'CsvSerializable':
           structs.append(struct)
 
-    for struct in structs:
-      s += '\n\n'
-      s += get_header_function(struct)
-      s += '\n\n'
-      s += get_serialization_function(struct)
+  s = get_header_header(args.input, args.primitives)
+
+  for struct in structs:
+    s += '\n\n'
+    s += f'{get_header_function_declaration(qualified_struct_type(struct))};'
+    s += '\n\n'
+    s += f'{get_serialization_function_declaration(qualified_struct_type(struct))};'
+
+  for struct in structs:
+    s += '\n\n'
+    s += get_header_function(struct)
+    s += '\n\n'
+    s += get_serialization_function(struct)
 
   if args.output:
     with open(args.output, 'w') as f:

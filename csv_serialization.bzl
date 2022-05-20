@@ -2,7 +2,7 @@ def csv_serialization(name, srcs, primitives = None, **kwargs):
     if not primitives:
       primitives = []
 
-    primitives.append("@cpp_csv_struct//:csv_base_primitives.h")
+    primitives = ["@cpp_csv_struct//:csv_base_primitives.h"] + primitives
 
     header_locations = " ".join(["$(location {})".format(h) for h in srcs])
     primitive_locations = " ".join(["$(location {})".format(p) for p in primitives])
