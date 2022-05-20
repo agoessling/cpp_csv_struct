@@ -20,7 +20,7 @@ def csv_serialization(name, srcs, primitives = None, **kwargs):
 
     native.cc_library(
         name = name,
-        srcs = primitives,
+        srcs = srcs + primitives,
         hdrs = [name + ".h"],
         **kwargs
     )
