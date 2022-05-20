@@ -23,8 +23,8 @@ cc_binary(
     name = "test_serialization",
     srcs = ["test_serialization.cc"],
     deps = [
-        ":struct_to_serialize",
         ":csv_serialization",
+        ":struct_to_serialize",
     ],
 )
 
