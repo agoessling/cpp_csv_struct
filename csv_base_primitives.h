@@ -81,7 +81,7 @@ void CsvSerialize(std::ostream& stream, const T& data, bool trailing_comma) {
 }
 
 template <>
-void CsvSerialize<std::string>(std::ostream& stream, const std::string& data, bool trailing_comma) {
+inline void CsvSerialize(std::ostream& stream, const std::string& data, bool trailing_comma) {
   stream << "\"" << data << "\"";
   if (trailing_comma) stream << ",";
 }

@@ -9,7 +9,7 @@ def get_header_function(struct):
 
   s = f'''\
 template <>
-void CsvHeader(
+inline void CsvHeader(
     std::ostream& stream, const std::string& name, const {type_name}& data, bool trailing_comma) {{
 '''
 
@@ -30,7 +30,7 @@ def get_serialization_function(struct):
 
   s = f'''\
 template <>
-void CsvSerialize(
+inline void CsvSerialize(
     std::ostream& stream, const {type_name}& data, bool trailing_comma) {{
 '''
 
