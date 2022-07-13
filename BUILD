@@ -1,4 +1,4 @@
-load("@cpp_csv_struct//:csv_serialization.bzl", "csv_serialization")
+load("@cpp_csv_struct//:csv_serialization_rule.bzl", "csv_serialization")
 load("@cpp_csv_struct_py_deps//:requirements.bzl", "requirement")
 
 exports_files(["csv_base_primitives.h"])
@@ -12,11 +12,31 @@ cc_library(
 cc_library(
     name = "struct_to_serialize",
     hdrs = ["struct_to_serialize.h"],
+    deps = [
+        ":csv_base_primitives",
+    ],
+)
+
+cc_library(
+    name = "another_struct",
+    hdrs = ["another_struct.h"],
+    deps = [
+        ":another_header",
+        ":csv_base_primitives",
+    ],
+)
+
+cc_library(
+    name = "another_header",
+    hdrs = ["another_header.h"],
 )
 
 csv_serialization(
     name = "csv_serialization",
-    srcs = ["struct_to_serialize.h"],
+    inputs = [
+        ":struct_to_serialize",
+        ":another_struct",
+    ],
 )
 
 cc_binary(
