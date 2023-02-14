@@ -61,27 +61,27 @@ void CsvHeader(std::ostream& stream, const std::string& name, const T& data, boo
 }
 
 template <class T>
-void CsvSerialize(std::ostream& stream, const T& data, bool trailing_comma) {
+void CsvSerialize(std::ostream& stream, const T& data, bool data_present, bool trailing_comma) {
   // Array like.
   if constexpr(::is_array_like<T>::value) {
     const size_t len = ::GetSize(data);
     for (size_t i = 0; i < len; ++i) {
       bool comma = i < len - 1 ? true : trailing_comma;
-      CsvSerialize(stream, data[i], comma);
+      CsvSerialize(stream, data[i], data_present, comma);
     }
     return;
   }
 
   // Everything else.
   if constexpr(!::is_array_like<T>::value) {
-    stream << data;
+    if (data_present) stream << data;
     if (trailing_comma) stream << ",";
     return;
   }
 }
 
 template <>
-inline void CsvSerialize(std::ostream& stream, const std::string& data, bool trailing_comma) {
-  stream << "\"" << data << "\"";
+inline void CsvSerialize(std::ostream& stream, const std::string& data, bool data_present, bool trailing_comma) {
+  if (data_present) stream << "\"" << data << "\"";
   if (trailing_comma) stream << ",";
 }

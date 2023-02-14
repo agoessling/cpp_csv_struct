@@ -28,7 +28,7 @@ int main() {
 
   std::cout << std::endl;
 
-  CsvSerialize(std::cout, test, false);
+  CsvSerialize(std::cout, test, true, false);
 
   std::cout << std::endl;
 

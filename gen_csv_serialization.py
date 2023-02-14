@@ -17,6 +17,7 @@ def get_serialization_function_declaration(type_name):
 template <>
 inline void CsvSerialize(std::ostream& stream,
                          const {type_name}& data,
+                         bool data_present,
                          bool trailing_comma)'''
 
 
@@ -40,7 +41,7 @@ def get_serialization_function(struct):
   num_prop = len(struct['properties']['public'])
   for i, member in enumerate(struct['properties']['public']):
     comma = 'true' if i < num_prop - 1 else 'trailing_comma'
-    s += f'  CsvSerialize(stream, data.{member["name"]}, {comma});\n'
+    s += f'  CsvSerialize(stream, data.{member["name"]}, data_present, {comma});\n'
 
   s += '}'
 
